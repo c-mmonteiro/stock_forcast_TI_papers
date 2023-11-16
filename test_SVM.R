@@ -34,7 +34,7 @@ dados <- subset(dados, select = -X)
  
  
 # Definindo o conjunto de treinamento e teste
-n <- 1000
+n <- 600
 train <- dados[row.names(dados) %in% 1:n, ]
 train_bruto <- subset(train, select = -direcao)
 train_resultado <- train$direcao
@@ -48,7 +48,7 @@ test_resultado <- test$direcao
 modelo_svm <- svm(direcao ~ ., data = train, type = 'nu-classification', kernel = "polynomial")
 
 for (i in 1:nrow(test)){
-  i
+  print(i)
   if (i > 1){
     train[nrow(train) + 1,] <- test[i,]
     modelo_svm <- svm(direcao ~ ., data = train, type = 'nu-classification', kernel = "polynomial")
@@ -65,10 +65,6 @@ for (i in 1:nrow(test)){
 
 
 teste001 <- predict(modelo_svm, test_bruto)
-#tabela V1
-table(teste001, test_resultado)
-#tabela V2
-table(teste01, test_resultado)
 
 test_resultado_f <- factor(test_resultado)
 
@@ -93,6 +89,7 @@ line_r <- list(
 lines <- list()
  erro_v1 <- 0
  erro_v2 <- 0
+ erro_v2_list <- list()
  for(i in 1:length(teste001)){
    if(teste001[i] != test_resultado_f[i]){
      line_b[["x0"]] <- i
@@ -107,12 +104,10 @@ lines <- list()
      lines <- c(lines, list(line_r))
      erro_v2 <- erro_v2 + 1
    }
+   erro_v2_list <- c(erro_v2_list, erro_v2/i)
    
  }
-#Erro com apenas 1 treinamento
-erro_v1/length(teste001)
-#Erro com vários treinamentos
-erro_v2/length(teste01)
+
 
 fig <- test_bruto %>% plot_ly(type="candlestick",
                       open = ~open1, close = ~close1,
@@ -120,3 +115,30 @@ fig <- test_bruto %>% plot_ly(type="candlestick",
 fig <- fig %>% layout(title = "Basic Candlestick Chart",
                      shapes = lines)
 fig
+
+
+
+#tabela V1
+tab_v1 <- table(teste001, test_resultado)
+#tabela V2
+tab_v2 <- table(teste01, test_resultado)
+
+#tabela V1
+#Erro Baixa
+tab_v1[2,1]/(tab_v1[1,1] + tab_v1[2,1])
+#Erro na alta
+tab_v1[1,2]/(tab_v1[1,2] + tab_v1[2,2])
+
+#tabela V2
+#Erro Baixa
+tab_v2[2,1]/(tab_v2[1,1] + tab_v2[2,1])
+#Erro na alta
+tab_v2[1,2]/(tab_v2[1,2] + tab_v2[2,2])
+
+
+#Erro com apenas 1 treinamento
+erro_v1/length(teste001)
+#Erro com vários treinamentos
+erro_v2/length(teste01)
+
+plot(1:length(teste001), erro_v2_list)
