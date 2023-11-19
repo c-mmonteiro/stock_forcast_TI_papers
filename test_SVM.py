@@ -15,6 +15,7 @@ dados.drop(['Unnamed: 0'], axis=1, inplace=True)
 
 #print(dados[dados.columns[21:22]].head(20))
 
+
 # Split dataset into training set and test set
 n_train = 600     #Numero de amostras no treino
 n_test = len(dados) - n_train

@@ -14,6 +14,7 @@ class indicadoresTecnicos:
         self.calcMACD(10, 12, 26)
         self.adOscillator()
         self.calcCCI(10)
+        self.direcao()
 
     def getSimpleMovingAverage(self):
         return self.sma   
@@ -35,6 +36,8 @@ class indicadoresTecnicos:
         return self.ad_oscillator
     def getCCI(self):
         return self.cci
+    def getDirecao(self):
+        return self.direcao
 
     def simpleMovingAverage(self, size_window):
         soma = 0
@@ -197,8 +200,15 @@ class indicadoresTecnicos:
             indice = indice + 1
             if (indice == size_window):
                 indice = 0
-             
 
+    def direcao(self):
+        self.direcao = []
+        for idx, price in enumerate(self.dados['close']):
+            if (idx > 4) and (idx < len(self.dados['close'])-1):
+                if (self.dados['open'][idx] < self.dados['close'][idx+1]):
+                    self.direcao.append(int(1))
+                else:
+                    self.direcao.append(int(-1))
 
     
 
@@ -239,6 +249,8 @@ dados['RSI'] = pd.DataFrame(ti.getRSI())
 dados['MACD'] = pd.DataFrame(ti.getMACD())
 dados['ADO'] = pd.DataFrame(ti.getADOscillator())
 dados['CCI'] = pd.DataFrame(ti.getCCI())
+dados['direcao'] = pd.DataFrame(ti.getDirecao())
+
 
 print(dados.head(50))
 
