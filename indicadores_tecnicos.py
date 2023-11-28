@@ -1,5 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn.preprocessing import MinMaxScaler
+
 #Indicadores técnicos dos artigos Kara (2011), Patel (2015) e Henrique (2023)
 
 class indicadoresTecnicos:
@@ -210,17 +212,53 @@ class indicadoresTecnicos:
                 else:
                     self.direcao.append(int(-1))
 
+    def updateDataFrame(self, dados_in):
+        dados_in['SMA'] = pd.DataFrame(self.getSimpleMovingAverage())
+        dados_in['WMA'] = pd.DataFrame(self.getWeightedMovingAverage())
+        dados_in['Momentum'] = pd.DataFrame(self.getMomentum())
+        dados_in['StochasticD'] = pd.DataFrame(self.getStochasticD())
+        dados_in['StochasticK'] = pd.DataFrame(self.getStochasticK())
+        dados_in['Williams'] = pd.DataFrame(self.getWilliams())
+        dados_in['RSI'] = pd.DataFrame(self.getRSI())
+        dados_in['MACD'] = pd.DataFrame(self.getMACD())
+        dados_in['ADO'] = pd.DataFrame(self.getADOscillator())
+        dados_in['CCI'] = pd.DataFrame(self.getCCI())
+        dados_in['direcao'] = pd.DataFrame(self.getDirecao())
+
+        dados_in = dados_in.dropna(axis=0)
+
+        return dados_in
     
+    def updateDataFrameNormal(self, dados_in):
+        dados_in = self.updateDataFrame(dados_in)
 
-arquivo = 'Tudo_PETR4_2520_FROM_2018_09_28_TO_2023_09_28.csv'
+        time = dados_in['time']
+        time = time.reset_index(drop=True)
+        dados_in.drop(['time'], axis=1, inplace=True)
+        colNames = dados_in.columns
 
-dados = pd.read_csv(arquivo)
-dados.drop(['Unnamed: 0'], axis=1, inplace=True)
+        scaler_minMax = MinMaxScaler()
+        data_norm = pd.DataFrame(scaler_minMax.fit_transform(dados_in), columns=colNames)
+        data_norm['time'] = pd.DataFrame(time)
 
-#dados.drop(['time'], axis=1, inplace=True)
+        return data_norm
 
-ti = indicadoresTecnicos(dados)
 
+    
+#########################################3
+#arquivo = 'Tudo_PETR4_2520_FROM_2018_09_28_TO_2023_09_28.csv'
+
+#dados = pd.read_csv(arquivo)
+#dados.drop(['Unnamed: 0'], axis=1, inplace=True)
+
+#data_norm = indicadoresTecnicos(dados).updateDataFrameNormal(dados)
+
+#print(data_norm)
+
+#dados.to_csv('TI_' + arquivo)
+
+#data_norm.to_csv('TIN_' + arquivo)
+###########################################################
 #plt.plot(dados['close'], label='Close')
 
 #plt.plot(ti.getSimpleMovingAverage(), label='sma')
@@ -237,28 +275,27 @@ ti = indicadoresTecnicos(dados)
 #plt.legend()
 #plt.show()
 
-#print(dados.head(15))
 
-dados['SMA'] = pd.DataFrame(ti.getSimpleMovingAverage())
-dados['WMA'] = pd.DataFrame(ti.getWeightedMovingAverage())
-dados['Momentum'] = pd.DataFrame(ti.getMomentum())
-dados['StochasticD'] = pd.DataFrame(ti.getStochasticD())
-dados['StochasticK'] = pd.DataFrame(ti.getStochasticK())
-dados['Williams'] = pd.DataFrame(ti.getWilliams())
-dados['RSI'] = pd.DataFrame(ti.getRSI())
-dados['MACD'] = pd.DataFrame(ti.getMACD())
-dados['ADO'] = pd.DataFrame(ti.getADOscillator())
-dados['CCI'] = pd.DataFrame(ti.getCCI())
-dados['direcao'] = pd.DataFrame(ti.getDirecao())
+#dados['SMA'] = pd.DataFrame(ti.getSimpleMovingAverage())
+#dados['WMA'] = pd.DataFrame(ti.getWeightedMovingAverage())
+#dados['Momentum'] = pd.DataFrame(ti.getMomentum())
+#dados['StochasticD'] = pd.DataFrame(ti.getStochasticD())
+#dados['StochasticK'] = pd.DataFrame(ti.getStochasticK())
+#dados['Williams'] = pd.DataFrame(ti.getWilliams())
+#dados['RSI'] = pd.DataFrame(ti.getRSI())
+#dados['MACD'] = pd.DataFrame(ti.getMACD())
+#dados['ADO'] = pd.DataFrame(ti.getADOscillator())
+#dados['CCI'] = pd.DataFrame(ti.getCCI())
+#dados['direcao'] = pd.DataFrame(ti.getDirecao())
 
 
-print(dados.head(50))
 
-dados = dados.dropna(axis=0)
 
-print(dados)
 
-dados.to_csv('TI_' + arquivo)
+
+
+
+
 
 
 

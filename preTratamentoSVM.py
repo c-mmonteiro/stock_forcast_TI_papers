@@ -33,3 +33,7 @@ print(df3.head())
 print(df3.tail())
 
 df3.to_csv("SVM_" + arquivo)
+
+
+
+
