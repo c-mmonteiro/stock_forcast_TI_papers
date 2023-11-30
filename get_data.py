@@ -32,8 +32,8 @@ class getHistoryData:
         
         mt5.shutdown()
 
-        dados.to_csv('Tudo_' + ativo + '_' + str(num_dias_intervalo) + '_FROM_' + dados['time'][0].strftime("%Y_%m_%d") + '_TO_' + dados['time'][len(dados['time'])-1].strftime("%Y_%m_%d") + '.csv')
+        dados.to_csv('Tudo_' + ativo + '_' + str(len(dados)) + '_FROM_' + dados['time'][0].strftime("%Y_%m_%d") + '_TO_' + dados['time'][len(dados['time'])-1].strftime("%Y_%m_%d") + '.csv')
 
             
 #Ajustar os dias de inicio e final também!
-getHistoryData('PETR4', 2520)
+getHistoryData('ITUB4', 2520)

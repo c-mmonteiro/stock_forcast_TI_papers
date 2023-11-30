@@ -12,6 +12,8 @@ from sklearn import metrics
 #ANN Library
 import elm
 
+#XGBoost
+from xgboost import XGBClassifier
 
 ################################################################
 ########       Classe SVM          #############################
@@ -75,10 +77,12 @@ class annTestELM:
 ################################################################
 ########       Classe XGBoost          #########################
 ################################################################
-#https://blog.quantinsti.com/forecasting-markets-using-extreme-gradient-boosting-xgboost/
+#https://dadosaocubo.com/o-guia-do-xgboost-com-python/
 class xgBoostTest:
     #FAZER TUDO
-    def __init__(self, dados, n_train, act_fun, num_hide, c_value, solucao):
+    def __init__(self, dados, n_train, booster_type, eta_value, colsample_value, 
+                 lambda_value, alpha_value, estimators_value, depth_value, 
+                 subsample_value):
         # Split dataset into training set and test set
         #n_train => Numero de amostras no treino
         n_test = len(dados) - n_train
@@ -89,16 +93,26 @@ class xgBoostTest:
         y_test = dados[dados.columns[dados.shape[1]-1]].tail(n_test).to_numpy()
 
 
-        #Create and Train ANN Classifier
-        model = elm.elm(hidden_units=num_hide, activation_function=act_fun, 
-                        random_type='normal', x=X_train, y=y_train, C=c_value,
-                        elm_type='clf')
-        beta, train_accuracy, running_time = model.fit(solucao)
+        #Create and Train XGBoost Classifier
+        clf = XGBClassifier(booster=booster_type,
+                            eta = eta_value,
+                            colsample_bytree= colsample_value,
+                            reg_lambda = lambda_value,
+                            alpha = alpha_value,
+                            n_estimators = estimators_value,
+                            max_depth = depth_value, 
+                            eval_metric = 'error',
+                            subsample = subsample_value,
+                            objective = 'binary:logistic', 
+                            random_state=0)
+        
+
+        clf.fit(X_train, y_train)
         #Predict the response for test dataset
-        #y_pred = model.predict(X_test)
+        y_pred = clf.predict(X_test)
 
         # Model Accuracy: how often is the classifier correct?
-        self.f_measure = model.score(X_test, y_test)
+        self.f_measure = metrics.accuracy_score(y_test, y_pred)
 
     def getFmeasure(self):
         return self.f_measure

@@ -19,6 +19,16 @@ class avaliacao:
         self.dados.drop(['real_volume'], axis=1, inplace=True)
         self.dados['direcao'] = self.dados['direcao'].astype('int')
 
+        contagem = self.dados['direcao'].value_counts()
+        print(f"Baixa: {contagem[0]} - {contagem[0]/len(self.dados)}")
+        print(f"Alta: {contagem[1]} - {contagem[1]/len(self.dados)}")
+
+        #Visualizar a distribuição dos dados
+        #colunas = self.dados.columns.to_list()
+        #plt.figure(figsize=(15,8))
+        #self.dados.boxplot(column = colunas[:-1])
+        #plt.show()
+
 ####################################################################
 #SVM
 ####################################################################
@@ -122,8 +132,60 @@ class avaliacao:
         if (save > 0):
             plt.savefig(fig_name)
         plt.show()
+####################################################################
+#XGBoost
+####################################################################
+    def testParametrosXGBoost(self, salvar, nome_arquivo):
+        f_measure_parameters = pd.DataFrame(columns=['Solucao', 'ActFun', 'NumHiden', 'C', 'Fmeasure'])
+
+        print(f'Booster     ETA  ColSample  Lambda    Alpha  Estimator Depth    SubSample   F-Measure')
+        for booster_type_test in ['gbtree', 'dart', 'gblinear']:
+            for eta_value_test in [0.1, 0.25, 0.5, 0.75, 0.9]:
+                for colsample_value_test in [0.1, 0.25, 0.5, 0.75, 0.9]:
+                    for lambda_value in [0.1, 0.5, 1, 5, 10, 50, 100]:
+                        for alpha_value_test in [0.1, 0.5, 1, 5, 10, 50, 100]:
+                            for estimators_value_test in [1, 5, 10, 15, 20, 30]:
+                                for depth_value_test in [1, 5, 10, 20, 30, 50, 100]:
+                                    for subsample_value_test in [0.1, 0.25, 0.5, 0.75, 0.9]:
+                                        f = xgBoostTest(self.dados, 600, booster_type_test, eta_value_test, colsample_value_test, 
+                                                        lambda_value, alpha_value_test, estimators_value_test, depth_value_test, 
+                                                        subsample_value_test).getFmeasure()
+                                        f_measure_parameters = f_measure_parameters.append(
+                                            {"Booster": booster_type_test,"ETA": eta_value_test, 
+                                                "ColSample": colsample_value_test, "Lambda": lambda_value, 
+                                                "Alpha": alpha_value_test, "Estimator": estimators_value_test,
+                                                "Depth": depth_value_test, "SubSample": subsample_value_test}, ignore_index=True)         
+                                        print(f'{booster_type_test}  {eta_value_test}   {colsample_value_test}  {lambda_value}  {alpha_value_test}    {estimators_value_test} {depth_value_test}  {subsample_value_test}  {f}')
+
+        if (salvar > 0):
+            f_measure_parameters.to_csv(nome_arquivo)
+
+        return f_measure_parameters.sort_values("Fmeasure", ascending=False)
+    
+    def crossValitationANN(self, save, fig_name):
+        #Cross-Valitation for poly kernel
+        f_measure_elm = []
+        for idx in range(600, 840):#len(dados)-2
+            f = annTestELM(self.dados, idx, 'sigmoid', 10, 0.4, 'no_re').getFmeasure()
+            f_measure_elm.append(f)
+            print(f'Tamanho do Treino: {idx} - F-Measure: {f}')
+
+        f_measure_elm_mean = np.average(f_measure_elm)
+        print(f'F-Measure médio: {f_measure_elm_mean}')
+
+        plt.plot(f_measure_elm, linewidth=0.5, color='b', label='ELM')
+        plt.xlabel('Interação do Cros-Valitation Iniciando em 50%')
+        plt.ylabel('F-Measure')
+        plt.title('F-Measure evolution on Cross-Valitation - ELM')
+        if (save > 0):
+            plt.savefig(fig_name)
+        plt.show()
+
+
 
 arquivo = 'Tudo_PETR4_2520_FROM_2018_09_28_TO_2023_09_28.csv'
+
+avaliacao(arquivo).testParametrosXGBoost(1, 'parametros_xgboost.csv')
 
 ################################################
 ####            Teste de Parametros
