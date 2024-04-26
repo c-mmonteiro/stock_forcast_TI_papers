@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from algoritimos import *  
 from indicadores_tecnicos import *  
+import csv
 
 
 class avaliacao:
@@ -20,6 +21,8 @@ class avaliacao:
         self.dados['direcao'] = self.dados['direcao'].astype('int')
 
         contagem = self.dados['direcao'].value_counts()
+        print('------------------------------')
+        print(arquivo)
         print(f"Baixa: {contagem[0]} - {contagem[0]/len(self.dados)}")
         print(f"Alta: {contagem[1]} - {contagem[1]/len(self.dados)}")
 
@@ -57,39 +60,31 @@ class avaliacao:
 
         return f_measure_parameters.sort_values("Fmeasure", ascending=False)
     
-    def crossValitationSVM(self, save, fig_name):
+    def crossValitationSVM(self, save, ativo, kernel_cv, nu_cv, degree_cv, gamma_cv):
         #Cross-Valitation for poly kernel
-        f_measure_poly = []
+        print('----------------------------')
+        print(f'Validação Cruzada SVM do {ativo} com kernel {kernel_cv}')
+        f_measure = []
         for idx in range(600, 840):#len(dados)-2
-            f = svmTest(self.dados, idx, 'poly', 0.75, 1, 4.5).getFmeasure()
-            f_measure_poly.append(f)
+            f = svmTest(self.dados, idx, kernel_cv, nu_cv, degree_cv, gamma_cv).getFmeasure()
+            f_measure.append(f)
             print(f'Tamanho do Treino: {idx} - F-Measure: {f}')
 
-        f_measure_poly_mean = np.average(f_measure_poly)
-        print(f'F-Measure médio: {f_measure_poly_mean}')
+        f_measure_mean = np.average(f_measure)
+        print(f'F-Measure médio {kernel_cv}: {f_measure_mean}')
 
-        #Cross-Valitation for radial kernel
-        f_measure_radial = []
-        for idx in range(600, 840):
-            f = svmTest(self.dados, idx, 'rbf', 0.90, 3, 10.0).getFmeasure()
-            f_measure_radial.append(f)
-            print(f'Tamanho do Treino: {idx} - F-Measure: {f}')
-
-        f_measure_radial_mean = np.average(f_measure_radial)
-        print(f'F-Measure médio RBF: {f_measure_radial_mean}')
-        print(f'F-Measure médio Poly: {f_measure_poly_mean}')
-
-
-
-        plt.plot(f_measure_poly, linewidth=0.5, color='b', label='Poly')
-        plt.plot(f_measure_radial, linewidth=0.5, color='r', label='Radial')
-        plt.xlabel('Interação do Cros-Valitation Iniciando em 50%')
+        plt.figure()
+        plt.plot(range(600, 840), f_measure, linewidth=0.5, color='b')
+        plt.xlabel('Cros-Valitation Iteration (Num Samples on Traning)')
         plt.ylabel('F-Measure')
-        plt.title('F-Measure evolution on Cross-Valitation')
-        plt.legend(title='Kernel:')
+        if kernel_cv == 'poly':
+            plt.title('F-Measure evolution on Cross-Valitation for SVM Polynomial - ' + ativo)
+        else:
+            plt.title('F-Measure evolution on Cross-Valitation for SVM Radial - ' + ativo)
+        #plt.legend(title='Kernel:')
         if (save > 0):
-            plt.savefig(fig_name)
-        plt.show()
+            plt.savefig('SVM_' + kernel_cv + '_' + ativo)
+        #plt.show()
 
 ####################################################################
 #ANN
@@ -114,24 +109,28 @@ class avaliacao:
 
         return f_measure_parameters.sort_values("Fmeasure", ascending=False)
     
-    def crossValitationANN(self, save, fig_name):
+    def crossValitationANN(self, save, ativo, solucao_cv, act_fun_cv, num_hide_cv, c_cv):
         #Cross-Valitation for poly kernel
+        print('----------------------------')
+        print(f'Validação Cruzada ANN do {ativo}')
         f_measure_elm = []
         for idx in range(600, 840):#len(dados)-2
-            f = annTestELM(self.dados, idx, 'sigmoid', 10, 0.4, 'no_re').getFmeasure()
+            f = annTestELM(self.dados, idx, act_fun_cv, num_hide_cv, c_cv, solucao_cv).getFmeasure()
             f_measure_elm.append(f)
-            print(f'Tamanho do Treino: {idx} - F-Measure: {f}')
+            #print(f'Tamanho do Treino: {idx} - F-Measure: {f}')
 
         f_measure_elm_mean = np.average(f_measure_elm)
         print(f'F-Measure médio: {f_measure_elm_mean}')
-
-        plt.plot(f_measure_elm, linewidth=0.5, color='b', label='ELM')
-        plt.xlabel('Interação do Cros-Valitation Iniciando em 50%')
+        
+        plt.figure()
+        plt.plot(range(600, 840), f_measure_elm, linewidth=0.5, color='b')
+        plt.xlabel('Cros-Valitation Iteration (Num Samples on Traning)')
         plt.ylabel('F-Measure')
-        plt.title('F-Measure evolution on Cross-Valitation - ELM')
+        plt.title('F-Measure evolution on Cross-Valitation for ANN - ' + ativo)
+        #plt.legend(title='Kernel:')
         if (save > 0):
-            plt.savefig(fig_name)
-        plt.show()
+            plt.savefig('ANN_' + ativo)
+        #plt.show()
 ####################################################################
 #XGBoost
 ####################################################################
@@ -162,35 +161,212 @@ class avaliacao:
 
         return f_measure_parameters.sort_values("Fmeasure", ascending=False)
     
-    def crossValitationANN(self, save, fig_name):
+####################################################################
+#Ensable
+#################################################################### 
+    def valitationEnsamble(self, save, ativo, 
+                 nu_poly, degree_poly, gamma_poly,
+                 nu_rbf, gamma_rbf,
+                 act_fun_ann, num_hide_ann, c_ann, solucao_ann):
         #Cross-Valitation for poly kernel
-        f_measure_elm = []
+        print('----------------------------')
+        print(f'Validação Cruzada Ensamble do {ativo}')
+        f_measure_ensamble = []
+        f_measure_poly = []
+        f_measure_rbf = []
+        f_measure_ann = []
         for idx in range(600, 840):#len(dados)-2
-            f = annTestELM(self.dados, idx, 'sigmoid', 10, 0.4, 'no_re').getFmeasure()
-            f_measure_elm.append(f)
-            print(f'Tamanho do Treino: {idx} - F-Measure: {f}')
+            h = ensableTest(self.dados, idx, 
+                 nu_poly, degree_poly, gamma_poly,
+                 nu_rbf, gamma_rbf,
+                 act_fun_ann, num_hide_ann, c_ann, solucao_ann)
+            f_measure_ensamble.append(h.getFmeasure())
+            f_measure_poly.append(h.getFmeasurePoly())
+            f_measure_rbf.append(h.getFmeasureRbf())
+            f_measure_ann.append(h.getFmeasureAnn())
+            print(f'Size Train: {idx} - Ensamble: {h.getFmeasure()} Poly: {h.getFmeasurePoly()}    Rbf: {h.getFmeasureRbf()} ANN: {h.getFmeasureAnn()}')
 
-        f_measure_elm_mean = np.average(f_measure_elm)
-        print(f'F-Measure médio: {f_measure_elm_mean}')
+        f_measure_ensamble_mean = np.average(f_measure_ensamble)
+        print(f'F-Measure médio Ensamble: {f_measure_ensamble_mean}')
+        f_measure_poly_mean = np.average(f_measure_poly)
+        print(f'F-Measure médio Poly: {f_measure_poly_mean}')
+        f_measure_rbf_mean = np.average(f_measure_rbf)
+        print(f'F-Measure médio Rbf: {f_measure_rbf_mean}')
+        f_measure_ann_mean = np.average(f_measure_ann)
+        print(f'F-Measure médio ANN: {f_measure_ann_mean}')
 
-        plt.plot(f_measure_elm, linewidth=0.5, color='b', label='ELM')
-        plt.xlabel('Interação do Cros-Valitation Iniciando em 50%')
+        plt.figure()
+        plt.plot(range(600, 840), f_measure_ensamble, linewidth=0.5, color='b')
+        plt.xlabel('Cros-Valitation Iteration (Num Samples on Traning)')
         plt.ylabel('F-Measure')
-        plt.title('F-Measure evolution on Cross-Valitation - ELM')
+        plt.title('F-Measure evolution on Cross-Valitation for Ensable - ' + ativo)
+        #plt.legend(title='Kernel:')
         if (save > 0):
-            plt.savefig(fig_name)
-        plt.show()
+            plt.savefig('Ensamble_' + ativo)
+        #plt.show()
+
+        plt.figure()
+        plt.plot(range(600, 840), f_measure_poly, linewidth=0.5, color='b')
+        plt.xlabel('Cros-Valitation Iteration (Num Samples on Traning)')
+        plt.ylabel('F-Measure')
+        plt.title('F-Measure evolution on Cross-Valitation for SVM Polynomial - ' + ativo)
+        #plt.legend(title='Kernel:')
+        if (save > 0):
+            plt.savefig('SVM_poly_' + ativo)
+        #plt.show()
 
 
+        plt.figure()
+        plt.plot(range(600, 840), f_measure_rbf, linewidth=0.5, color='b')
+        plt.xlabel('Cros-Valitation Iteration (Num Samples on Traning)')
+        plt.ylabel('F-Measure')
+        plt.title('F-Measure evolution on Cross-Valitation for SVM Radial - ' + ativo)
+        #plt.legend(title='Kernel:')
+        if (save > 0):
+            plt.savefig('SVM_rbf' + ativo)
+        #plt.show()
 
-arquivo = 'Tudo_PETR4_2520_FROM_2018_09_28_TO_2023_09_28.csv'
+        plt.figure()
+        plt.plot(range(600, 840), f_measure_ann, linewidth=0.5, color='b')
+        plt.xlabel('Cros-Valitation Iteration (Num Samples on Traning)')
+        plt.ylabel('F-Measure')
+        plt.title('F-Measure evolution on Cross-Valitation for ANN - ' + ativo)
+        #plt.legend(title='Kernel:')
+        if (save > 0):
+            plt.savefig('ANN_' + ativo)
+        #plt.show()
 
-avaliacao(arquivo).testParametrosXGBoost(1, 'parametros_xgboost.csv')
+####################################################################
+#Cross Valitation
+#################################################################### 
+    def crossValitation(self, save, ativo, 
+                 nu_poly, degree_poly, gamma_poly,
+                 nu_rbf, gamma_rbf,
+                 act_fun_ann, num_hide_ann, c_ann, solucao_ann):
+        #Cross-Valitation for poly kernel
+        print('----------------------------')
+        print(f'Validação Cruzada Ensamble do {ativo}')
+        acertos_ensamble = 0
+        acertos_ensamble_unanime = 0
+        duvida_ensamble_unanime = 0
+        acertos_svm_poly = 0
+        acertos_svm_rbf = 0
+        acertos_ann = 0
 
-################################################
-####            Teste de Parametros
-#parametros = avaliacao(arquivo).testParametrosSVM(0,0)
-#print(parametros[parametros["Kernel"] == "poly"].head())
-#print(parametros[parametros["Kernel"] == "rbf"].head())
+        inicio = 600
+        tamanho = 600 
 
-#avaliacao(arquivo).crossValitationSVM()
+        for idx in range(inicio, inicio+tamanho):
+            acertos = testD1(self.dados, idx, 
+                 nu_poly, degree_poly, gamma_poly,
+                 nu_rbf, gamma_rbf,
+                 act_fun_ann, num_hide_ann, c_ann, solucao_ann).getAcertos()
+            if acertos[0] == 1:
+                acertos_ensamble = acertos_ensamble + 1
+            if acertos[1] == 1:
+                acertos_ensamble_unanime = acertos_ensamble_unanime + 1
+            if acertos[1] == -1:
+                duvida_ensamble_unanime = duvida_ensamble_unanime + 1
+            if acertos[2] == 1:
+                acertos_svm_poly = acertos_svm_poly + 1
+            if acertos[3] == 1:
+                acertos_svm_rbf = acertos_svm_rbf + 1
+            if acertos[4] == 1:
+                acertos_ann = acertos_ann + 1
+            print(f'Size Train: {idx}')
+
+        
+        print(f'F-Measure Cross Validation Ensamble: {acertos_ensamble/tamanho}')
+        print(f'F-Measure Cross Validation Ensamble Unanime total: {acertos_ensamble_unanime/tamanho}')
+        print(f'Dúvida no Ensamble Unanime: {duvida_ensamble_unanime}')
+        print(f'F-Measure Cross Validation Ensamble: {acertos_svm_poly/tamanho}')
+        print(f'F-Measure Cross Validation Ensamble: {acertos_svm_rbf/tamanho}')
+        print(f'F-Measure Cross Validation ANN: {acertos_ann/tamanho}')
+
+    def crossValitationSave(self, save, ativo, 
+                 nu_poly, degree_poly, gamma_poly,
+                 nu_rbf, gamma_rbf,
+                 act_fun_ann, num_hide_ann, c_ann, solucao_ann):
+        inicio = 1140
+        tamanho = 60 
+
+        with open("ativo_" + str(inicio) + ".csv", "w", newline="") as student_file:
+            writer = csv.writer(student_file)
+            
+
+            for idx in range(inicio, inicio+tamanho):
+                acertos = testD1(self.dados, idx, 
+                    nu_poly, degree_poly, gamma_poly,
+                    nu_rbf, gamma_rbf,
+                    act_fun_ann, num_hide_ann, c_ann, solucao_ann).getAcertos()
+
+                writer.writerow(acertos)
+
+
+        
+    
+    
+
+
+arquivo = 'Tudo_PETR4_1242_FROM_2018_11_30_TO_2023_11_30.csv'
+handle = avaliacao(arquivo)
+#handle.crossValitationSVM(1, 'PETR4', 'poly', 0.25, 1, 4.5)
+#handle.crossValitationSVM(1, 'PETR4', 'rbf', 0.75, 3, 0.5)
+#handle.crossValitationANN(1, 'PETR4', 'no_re', 'relu', 50, 0.7)
+
+#handle.crossValitationEnsamble(1, 'PETR4', 0.25, 1, 4.5,
+#                               0.75, 0.5, 
+#                               'relu', 50, 0.7, 'no_re')
+
+#handle.crossValitation(1, 'PETR4', 0.25, 1, 4.5,
+#                       0.75, 0.5, 
+#                       'relu', 50, 0.7, 'no_re')
+
+arquivo = 'Tudo_VALE3_1242_FROM_2018_11_30_TO_2023_11_30.csv'
+handle = avaliacao(arquivo)
+#handle.crossValitationANN(1, 'VALE3', 'no_re', 'leaky_relu', 50, 0.4)
+#handle.crossValitationSVM(1, 'VALE3', 'rbf', 0.25, 3, 1)
+#handle.crossValitationSVM(1, 'VALE3', 'poly', 0.1, 3, 3)
+
+#handle.valitationEnsamble(1, 'VALE3', 0.1, 3, 3,
+#                               0.25, 1, 
+#                               'leaky_relu', 50, 0.4, 'no_re')
+
+#handle.crossValitation(1, 'VALE3', 0.1, 3, 3,
+#                               0.25, 1, 
+#                               'leaky_relu', 50, 0.4, 'no_re')
+
+
+arquivo = 'Tudo_BBAS3_1242_FROM_2018_11_30_TO_2023_11_30.csv'
+
+handle = avaliacao(arquivo)
+#handle.crossValitationANN(1, 'BBAS3', 'no_re', 'sin', 20, 0.8)
+#handle.crossValitationSVM(1, 'BBAS3', 'rbf', 0.25, 3, 10)#segundo maior
+#handle.crossValitationSVM(1, 'BBAS3', 'poly', 0.25, 3, 4.5)#segundo maior (rodando paralelo)
+#handle.crossValitationEnsamble(1, 'BBAS3', 
+#                               0.25, 3, 4.5,
+#                               0.25, 10,
+#                               'sin', 20, 0.8, 'no_re')
+
+#handle.crossValitation(1, 'BBAS3',
+#                       0.25, 3, 4.5,
+#                       0.25, 10,
+#                       'sin', 20, 0.8, 'no_re')
+
+
+arquivo = 'Tudo_ITUB4_1243_FROM_2018_11_28_TO_2023_11_30.csv'
+
+handle = avaliacao(arquivo)
+#handle.crossValitationANN(1, 'ITUB4', 'no_re', 'leaky_relu', 100, 0.1)
+#handle.crossValitationSVM(1, 'ITUB4', 'rbf', 0.5, 3, 1.5)
+#handle.crossValitationSVM(1, 'ITUB4', 'poly', 0.25, 3, 5)#segundo maior (rodando paralelo 2)
+
+#handle.crossValitationEnsamble(1, 'ITUB4', 
+#                               0.25, 3, 5,
+#                               0.5, 1.5,
+#                               'leaky_relu', 100, 0.1, 'no_re')
+
+handle.crossValitation(1, 'ITUB4', 
+                       0.25, 3, 5,
+                       0.5, 1.5,
+                       'leaky_relu', 100, 0.1, 'no_re')

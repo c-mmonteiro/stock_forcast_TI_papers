@@ -37,3 +37,6 @@ class getHistoryData:
             
 #Ajustar os dias de inicio e final também!
 getHistoryData('ITUB4', 2520)
+getHistoryData('PETR4', 2520)
+getHistoryData('VALE3', 2520)
+getHistoryData('BBAS3', 2520)
