@@ -246,18 +246,18 @@ class indicadoresTecnicos:
 
     
 #########################################3
-#arquivo = 'Tudo_PETR4_2520_FROM_2018_09_28_TO_2023_09_28.csv'
+arquivo = 'Tudo_PETR4_2520_FROM_2018_09_28_TO_2023_09_28.csv'
 
-#dados = pd.read_csv(arquivo)
-#dados.drop(['Unnamed: 0'], axis=1, inplace=True)
+dados = pd.read_csv(arquivo)
+dados.drop(['Unnamed: 0'], axis=1, inplace=True)
 
-#data_norm = indicadoresTecnicos(dados).updateDataFrameNormal(dados)
+data_norm = indicadoresTecnicos(dados).updateDataFrameNormal(dados)
 
-#print(data_norm)
+print(data_norm)
 
-#dados.to_csv('TI_' + arquivo)
+dados.to_csv('TI_' + arquivo)
 
-#data_norm.to_csv('TIN_' + arquivo)
+data_norm.to_csv('TIN_' + arquivo)
 ###########################################################
 #plt.plot(dados['close'], label='Close')
 

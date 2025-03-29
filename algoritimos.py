@@ -13,7 +13,7 @@ from sklearn import metrics
 import elm
 
 #XGBoost
-from xgboost import XGBClassifier
+#from xgboost import XGBClassifier
 
 ################################################################
 ########       Classe SVM          #############################
@@ -47,11 +47,15 @@ class svmTest:
 ################################################################
 ########       Classe ANN com ELM      #########################
 ################################################################
-#https://github.com/5663015/elm
+#c
 class annTestELM:
     def __init__(self, dados, n_train, act_fun, num_hide, c_value, solucao):
         # Split dataset into training set and test set
         #n_train => Numero de amostras no treino
+
+        n_train = int(n_train)
+        num_hide = int(num_hide)
+
         n_test = len(dados) - n_train
 
         X_train = dados[dados.columns[0:dados.shape[1]-1]].head(n_train).to_numpy()
