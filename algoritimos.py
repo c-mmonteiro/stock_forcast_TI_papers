@@ -21,6 +21,8 @@ import elm
 class svmTest:
     def __init__(self, dados, n_train, kernel_type, nu_value, degree_value, gamma_value) -> None:
 
+        degree_value = int(degree_value)
+
         # Split dataset into training set and test set
         #n_train => Numero de amostras no treino
         n_test = len(dados) - n_train
@@ -30,6 +32,8 @@ class svmTest:
         X_test = dados[dados.columns[0:dados.shape[1]-1]].tail(n_test)
         y_test = dados[dados.columns[dados.shape[1]-1]].tail(n_test)
         y_test = y_test.values.tolist()
+
+        
 
         #Create a svm Classifier
         clf = svm.NuSVC(kernel=kernel_type, nu=nu_value, degree=degree_value, gamma=gamma_value) 

@@ -5,6 +5,9 @@ import pandas as pd
 
 from algoritimos import *
 
+import time
+import csv
+
 #####################################################
 #Inicializa os dados
 
@@ -43,34 +46,60 @@ def f(X):
 #X[2] = c_value -> {0.1 a 0.9} - real
 #solucao -> {'no_re', 'solution1', 'solution2'}
 
+#############################################################
+#############################################################
+##          Inicio do script
+#############################################################
+
+arquivo_csv = 'dados.csv'
+
+
+
 varbound=np.array([[0,4],[2,500],[0.1, 0.9]])
 vartype=np.array([['int'],['int'],['real']])
 
-algorithm_param = {'max_num_iteration': 3000,\
-                   'population_size':100,\
-                   'mutation_probability':0.1,\
-                   'elit_ratio': 0.05,\
-                   'crossover_probability': 0.75,\
-                   'parents_portion': 0.3,\
+algorithm_param = {'max_num_iteration': 10,\
+                   'population_size':5,\
+                   'mutation_probability':0.75,\
+                   'elit_ratio': 0.08,\
+                   'crossover_probability': 0.95,\
+                   'parents_portion': 0.1,\
                    'crossover_type':'uniform',\
-                   'max_iteration_without_improv':200}
+                   'max_iteration_without_improv':5}
 
-model=ga(function=f,\
-         dimension=len(vartype),\
-         variable_type_mixed=vartype,\
-         variable_boundaries=varbound, \
-         algorithm_parameters=algorithm_param)
+print(algorithm_param)
 
-model.run()
+with open(arquivo_csv, mode='w', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file, delimiter=";")
+        writer.writerow(['Act Fun', 'Num Layer', 'Nu', 'Acuracias', 'Tempo'])  # Cabeçalho
 
-print(model.report)
-print(model.output_dict)
+for idx in range(3):
+
+    inicio = time.time()
+
+    model=ga(function=f,\
+            function_timeout = 20,\
+            dimension=len(vartype),\
+            variable_type_mixed=vartype,\
+            variable_boundaries=varbound, \
+            algorithm_parameters=algorithm_param,\
+            convergence_curve=False)
+
+    model.run()
+
+    fim = time.time()
+
+    resultado = model.output_dict
+
+    array = np.append(resultado['variable'], resultado['function'])
+
+    array = np.append(resultado['variable'], (fim-inicio))
 
 
+    with open(arquivo_csv, mode='a', newline='', encoding='utf-8') as file:
+            writer = csv.writer(file, delimiter=";")
+            writer.writerow(array) 
+
+    print(array)
 
 ###################################################################
-
-
-    
-
-
