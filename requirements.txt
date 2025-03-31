@@ -1,4 +1,4 @@
-
+geneticalgorithm==1.0.2
 matplotlib==3.5.0
 MetaTrader5
 numpy==1.22.4
