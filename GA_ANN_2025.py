@@ -50,30 +50,27 @@ def f(X):
 #############################################################
 ##          Inicio do script
 #############################################################
-
-arquivo_csv = 'dados.csv'
-
-
+arquivo_csv = 'dados6.csv'
 
 varbound=np.array([[0,4],[2,500],[0.1, 0.9]])
 vartype=np.array([['int'],['int'],['real']])
 
-algorithm_param = {'max_num_iteration': 10,\
-                   'population_size':5,\
-                   'mutation_probability':0.75,\
-                   'elit_ratio': 0.08,\
-                   'crossover_probability': 0.95,\
+algorithm_param = {'max_num_iteration': 5000,\
+                   'population_size':150,\
+                   'mutation_probability':0.5,\
+                   'elit_ratio': 0.02,\
+                   'crossover_probability': 0.7,\
                    'parents_portion': 0.1,\
                    'crossover_type':'uniform',\
-                   'max_iteration_without_improv':5}
+                   'max_iteration_without_improv':250}
 
 print(algorithm_param)
 
 with open(arquivo_csv, mode='w', newline='', encoding='utf-8') as file:
-        writer = csv.writer(file, delimiter=";")
-        writer.writerow(['Act Fun', 'Num Layer', 'Nu', 'Acuracias', 'Tempo'])  # Cabeçalho
+    writer = csv.writer(file, delimiter=";")
+    writer.writerow(['Act Fun', 'Num Layer', 'Nu', 'Acuracias', 'Tempo'])  # Cabeçalho
 
-for idx in range(3):
+for idx in range(10):
 
     inicio = time.time()
 
@@ -93,13 +90,13 @@ for idx in range(3):
 
     array = np.append(resultado['variable'], resultado['function'])
 
-    array = np.append(resultado['variable'], (fim-inicio))
-
+    array = np.append(array, (fim-inicio))
+    print(array)
 
     with open(arquivo_csv, mode='a', newline='', encoding='utf-8') as file:
-            writer = csv.writer(file, delimiter=";")
-            writer.writerow(array) 
+        writer = csv.writer(file, delimiter=";")
+        writer.writerow(array) 
 
-    print(array)
+    
 
 ###################################################################
