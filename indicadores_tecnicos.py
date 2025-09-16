@@ -244,59 +244,59 @@ class indicadoresTecnicos:
         return data_norm
 
 
+if __name__ == "__main__" 
+    #########################################3
+    arquivo = 'Tudo_PETR4_2520_FROM_2018_09_28_TO_2023_09_28.csv'
     
-#########################################3
-arquivo = 'Tudo_PETR4_2520_FROM_2018_09_28_TO_2023_09_28.csv'
-
-dados = pd.read_csv(arquivo)
-dados.drop(['Unnamed: 0'], axis=1, inplace=True)
-
-data_norm = indicadoresTecnicos(dados).updateDataFrameNormal(dados)
-
-print(data_norm)
-
-dados.to_csv('TI_' + arquivo)
-
-data_norm.to_csv('TIN_' + arquivo)
-###########################################################
-#plt.plot(dados['close'], label='Close')
-
-#plt.plot(ti.getSimpleMovingAverage(), label='sma')
-#plt.plot(ti.getWeightedMovingAverage(), label='wma')
-#plt.plot(ti.getMomentum(), label='momentum')
-#plt.plot(ti.getStochasticD(), label='Stochastic D')
-#plt.plot(ti.getStochasticK(), label='Stochastic K')
-#plt.plot(ti.getWilliams(), label='Williams')
-#plt.plot(ti.getRSI(), label='rsi')
-#plt.plot(ti.getMACD(), label='macd')
-#plt.plot(ti.getADOscillator(), label='A/D Oscillator')
-#plt.plot(ti.getCCI(), label='CCI')
-
-#plt.legend()
-#plt.show()
-
-
-#dados['SMA'] = pd.DataFrame(ti.getSimpleMovingAverage())
-#dados['WMA'] = pd.DataFrame(ti.getWeightedMovingAverage())
-#dados['Momentum'] = pd.DataFrame(ti.getMomentum())
-#dados['StochasticD'] = pd.DataFrame(ti.getStochasticD())
-#dados['StochasticK'] = pd.DataFrame(ti.getStochasticK())
-#dados['Williams'] = pd.DataFrame(ti.getWilliams())
-#dados['RSI'] = pd.DataFrame(ti.getRSI())
-#dados['MACD'] = pd.DataFrame(ti.getMACD())
-#dados['ADO'] = pd.DataFrame(ti.getADOscillator())
-#dados['CCI'] = pd.DataFrame(ti.getCCI())
-#dados['direcao'] = pd.DataFrame(ti.getDirecao())
-
-
-
-
-
-
-
-
-
-
-
-
-
+    dados = pd.read_csv(arquivo)
+    dados.drop(['Unnamed: 0'], axis=1, inplace=True)
+    
+    data_norm = indicadoresTecnicos(dados).updateDataFrameNormal(dados)
+    
+    print(data_norm)
+    
+    dados.to_csv('TI_' + arquivo)
+    
+    data_norm.to_csv('TIN_' + arquivo)
+    ###########################################################
+    #plt.plot(dados['close'], label='Close')
+    
+    #plt.plot(ti.getSimpleMovingAverage(), label='sma')
+    #plt.plot(ti.getWeightedMovingAverage(), label='wma')
+    #plt.plot(ti.getMomentum(), label='momentum')
+    #plt.plot(ti.getStochasticD(), label='Stochastic D')
+    #plt.plot(ti.getStochasticK(), label='Stochastic K')
+    #plt.plot(ti.getWilliams(), label='Williams')
+    #plt.plot(ti.getRSI(), label='rsi')
+    #plt.plot(ti.getMACD(), label='macd')
+    #plt.plot(ti.getADOscillator(), label='A/D Oscillator')
+    #plt.plot(ti.getCCI(), label='CCI')
+    
+    #plt.legend()
+    #plt.show()
+    
+    
+    #dados['SMA'] = pd.DataFrame(ti.getSimpleMovingAverage())
+    #dados['WMA'] = pd.DataFrame(ti.getWeightedMovingAverage())
+    #dados['Momentum'] = pd.DataFrame(ti.getMomentum())
+    #dados['StochasticD'] = pd.DataFrame(ti.getStochasticD())
+    #dados['StochasticK'] = pd.DataFrame(ti.getStochasticK())
+    #dados['Williams'] = pd.DataFrame(ti.getWilliams())
+    #dados['RSI'] = pd.DataFrame(ti.getRSI())
+    #dados['MACD'] = pd.DataFrame(ti.getMACD())
+    #dados['ADO'] = pd.DataFrame(ti.getADOscillator())
+    #dados['CCI'] = pd.DataFrame(ti.getCCI())
+    #dados['direcao'] = pd.DataFrame(ti.getDirecao())
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
