@@ -244,7 +244,7 @@ class indicadoresTecnicos:
         return data_norm
 
 
-if __name__ == "__main__" 
+if __name__ == "__main__":
     #########################################3
     arquivo = 'Tudo_PETR4_2520_FROM_2018_09_28_TO_2023_09_28.csv'
     
